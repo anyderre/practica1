@@ -1,11 +1,16 @@
 
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.commons.validator.*;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.FormElement;
 import org.jsoup.select.Elements;
+import org.apache.commons.validator.routines.*;
 
 
 import java.io.IOException;
@@ -51,7 +56,9 @@ public class Main {
         //pregunta c) Cantidades de tags img que hay en el documento HTML
         System.out.println("Number of 'img'-> "+ tagsLength("img", document)[0]);
         //pregunta d)cantidad de form categorizado por GET o por POST
-        System.out.println("Number of form[Post]-> "+tagsLength("form", document)[0]+"\n"+"Number of form[Get]-> "+tagsLength("form", document)[1]);
+        int [] tagsLength = new int[]{};
+        tagsLength=tagsLength("form", document);
+        System.out.println("Number of form[Post]-> "+tagsLength[0]+"\n"+"Number of form[Get]-> "+tagsLength[1]);
         //pregunta e) mostrar los inputs con sus respectivos tipos
         if(inputTags(document)!=null){
             System.out.print("{");
@@ -63,27 +70,24 @@ public class Main {
             System.out.printf("No hay input tags");
         }
 
-
-        System.out.println(document);
+        //Pregunta f)
+        printParams(document, validUrl);
 
     }
     private static boolean isValidURL(String inputURL){
         try {
-            URL url = new URL(inputURL);
-            URLConnection urlConnection = url.openConnection();
-            urlConnection.connect();
-            return true;
-        } catch (MalformedURLException e) {
-            System.out.println("Invalid Url,");
-        }catch (IOException ex){
-            System.out.print(" try with a new one!!!");
-        }catch (IllegalArgumentException exc){
-            System.out.println("Illegal argument");
+            UrlValidator url = new UrlValidator(new String[]{"http", "https"});
+                if(url.isValid(inputURL)){
+                    return true;
+                }
+
+        }catch (Exception ec){
+            ec.printStackTrace();
         }
         return false;
     }
     private  static int numberOfLines(Document document) {
-        return document.select("*").size();
+        return document.html().split("\n").length;
 
     }
     //Returning the
@@ -131,4 +135,29 @@ public class Main {
         return types;
     }
 
+    private static void printParams(Document document, String validUrl){
+        Connection.Response response=null;
+        try {
+
+            if (document.getElementsByTag("form").attr("method").equals("post") || document.getElementsByTag("form").attr("method").equals("POST")) {
+
+                if ( document.getElementsByTag("form[method=post]").attr("action").contains("http")){
+                     response = Jsoup.connect(document.getElementsByTag("form[method=post]").attr("action")).data("asignatura", "practica1").userAgent("Chrome").ignoreHttpErrors(true).method(Connection.Method.POST).execute();
+                    if(response.statusCode()==200)
+                        System.out.println(response.parse());
+                    System.out.println("Error de connexion");
+                }else{
+                    response = Jsoup.connect(validUrl+document.getElementsByTag("form[method=post]").attr("action")).data("asignatura","practica1").userAgent("Chrome").ignoreHttpErrors(true).method(Connection.Method.POST).execute();
+                    if(response.statusCode()==200)
+                        System.out.println(response.parse());
+                    System.out.println("Error de connexion");
+                }
+            }
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+
+        }
+
+    }
 }
