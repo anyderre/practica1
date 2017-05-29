@@ -87,6 +87,11 @@ public class Main {
         return false;
     }
     private  static int numberOfLines(Document document) {
+
+        document.outputSettings(new Document.OutputSettings().prettyPrint(false));
+        document.select("br").append("\n");
+        document.select("html").append("\n");
+        document.select("body").append("\n");
         return document.html().split("\n").length;
 
     }
@@ -122,35 +127,32 @@ public class Main {
        //String[] types = new String[]{};
         ArrayList<String> types = new ArrayList<>();
         int count=0;
-        if (document.getElementsByTag("form").hasText()) {
-            Elements forms = document.getElementsByTag("form");
-            for(Element form: forms){
-                Elements inputs = form.getElementsByTag("input");
-                for(Element input : inputs){
-                   types.add(input.attr("type"));
-                }
-                count+=1;
-            }
-        }
+           for (Element form :document.getElementsByTag("form")){
+               for (Element input :form.getElementsByTag("input")){
+                   types.add(input.getElementsByAttribute("type").attr("type"));
+               }
+           }
+
+
         return types;
     }
 
     private static void printParams(Document document, String validUrl){
         Connection.Response response=null;
         try {
+            for (Element form: document.getElementsByTag("form")){
+                //System.out.println(form);
+                if (form.attr("method").equals("post") || form.attr("method").equals("POST")) {
+                        if ( document.getElementsByTag("form[method=post]").attr("action").contains("http")){
+                         response = Jsoup.connect(document.getElementsByTag("form[method=post]").attr("action")).data("asignatura", "practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
+                        if(response.statusCode()==200)
+                            System.out.println(response.parse());
+                    }else{
+                        response = Jsoup.connect(validUrl+document.getElementsByTag("form[method=post]").attr("action")).data("asignatura","practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
+                        if(response.statusCode()==200)
+                            System.out.println(response.parse());
 
-            if (document.getElementsByTag("form").attr("method").equals("post") || document.getElementsByTag("form").attr("method").equals("POST")) {
-
-                if ( document.getElementsByTag("form[method=post]").attr("action").contains("http")){
-                     response = Jsoup.connect(document.getElementsByTag("form[method=post]").attr("action")).data("asignatura", "practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
-                    if(response.statusCode()==200)
-                        System.out.println(response.parse());
-                    System.out.println("Error de connexion");
-                }else{
-                    response = Jsoup.connect(validUrl+document.getElementsByTag("form[method=post]").attr("action")).data("asignatura","practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
-                    if(response.statusCode()==200)
-                        System.out.println(response.parse());
-                    System.out.println("Error de connexion");
+                    }
                 }
             }
 
