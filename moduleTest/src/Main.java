@@ -65,7 +65,7 @@ public class Main {
             for(String type:inputTags(document)){
                 System.out.print("input-> type="+type+",\n");
             }
-            System.out.print("}");
+            System.out.print("}\n\n");
         }else{
             System.out.printf("No hay input tags");
         }
@@ -142,12 +142,12 @@ public class Main {
             if (document.getElementsByTag("form").attr("method").equals("post") || document.getElementsByTag("form").attr("method").equals("POST")) {
 
                 if ( document.getElementsByTag("form[method=post]").attr("action").contains("http")){
-                     response = Jsoup.connect(document.getElementsByTag("form[method=post]").attr("action")).data("asignatura", "practica1").userAgent("Chrome").ignoreHttpErrors(true).method(Connection.Method.POST).execute();
+                     response = Jsoup.connect(document.getElementsByTag("form[method=post]").attr("action")).data("asignatura", "practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
                     if(response.statusCode()==200)
                         System.out.println(response.parse());
                     System.out.println("Error de connexion");
                 }else{
-                    response = Jsoup.connect(validUrl+document.getElementsByTag("form[method=post]").attr("action")).data("asignatura","practica1").userAgent("Chrome").ignoreHttpErrors(true).method(Connection.Method.POST).execute();
+                    response = Jsoup.connect(validUrl+document.getElementsByTag("form[method=post]").attr("action")).data("asignatura","practica1").userAgent("Chrome").method(Connection.Method.POST).execute();
                     if(response.statusCode()==200)
                         System.out.println(response.parse());
                     System.out.println("Error de connexion");
